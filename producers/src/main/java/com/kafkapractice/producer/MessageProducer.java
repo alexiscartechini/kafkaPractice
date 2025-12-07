@@ -26,9 +26,10 @@ public class MessageProducer {
 
     public static Map<String, Object> getMappingProperties(){
         Map<String, Object> propertiesMap = new HashMap<>();
-        propertiesMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        propertiesMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
         propertiesMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         propertiesMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        propertiesMap.put(ProducerConfig.ACKS_CONFIG, "all");
         return propertiesMap;
     }
 
@@ -40,5 +41,7 @@ public class MessageProducer {
         } catch (InterruptedException|ExecutionException e) {
             throw new RuntimeException(e);
         }
+        kafkaProducer.flush();
+        kafkaProducer.close();
     }
 }
