@@ -25,10 +25,12 @@ public class MessageProducer {
         kafkaProducer = new KafkaProducer<>(propertiesMap);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         MessageProducer messageProducer = new MessageProducer(getMappingProperties());
-//        messageProducer.publishMessageSynchronously(null, "ABC");
-        messageProducer.publishMessageAsynchronously(null, "DEF");
+        messageProducer.publishMessageSynchronously("1", "ABC");
+        messageProducer.publishMessageSynchronously("1", "DEF");
+//        messageProducer.publishMessageAsynchronously(null, "DEF");
+        Thread.sleep(3000);
     }
 
     public static Map<String, Object> getMappingProperties(){
@@ -48,8 +50,6 @@ public class MessageProducer {
         } catch (InterruptedException|ExecutionException e) {
             logger.error("Exception in publishMessageSynchronously: {}", e.getMessage());
         }
-        kafkaProducer.flush();
-        kafkaProducer.close();
     }
 
     public void publishMessageAsynchronously(String key, String value){
@@ -60,8 +60,6 @@ public class MessageProducer {
         } catch (InterruptedException|ExecutionException e) {
             logger.error("Exception in publishMessageSynchronously: {}", e.getMessage());
         }
-        kafkaProducer.flush();
-        kafkaProducer.close();
     }
 
     Callback callback = (metadata, exception) -> {
