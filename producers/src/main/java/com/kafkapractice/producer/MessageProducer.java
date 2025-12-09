@@ -70,4 +70,8 @@ public class MessageProducer {
                     metadata.offset(), metadata.partition());
         }
     };
+
+    public void close(){
+        kafkaProducer.close();
+    }
 }
