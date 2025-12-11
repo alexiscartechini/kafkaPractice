@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static com.kafkapractice.producer.MessageProducer.getMappingProperties;
+import static com.kafkapractice.producer.MessageProducer.buildProducerProperties;
 
 public class CommandLineLauncher {
     private static final Logger logger = LoggerFactory.getLogger(MessageProducer.class);
@@ -81,7 +81,7 @@ public class CommandLineLauncher {
     }
     public static MessageProducer init(){
 
-        Map<String, Object> producerProps = getMappingProperties();
+        Map<String, Object> producerProps = buildProducerProperties();
         MessageProducer messageProducer = new MessageProducer(producerProps);
         return messageProducer;
     }
