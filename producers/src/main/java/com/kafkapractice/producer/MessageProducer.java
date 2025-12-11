@@ -21,19 +21,19 @@ public class MessageProducer {
     String topicName = "test-topic";
     KafkaProducer<String, String> kafkaProducer;
 
-    public MessageProducer(Map<String, Object> propertiesMap){
-        kafkaProducer = new KafkaProducer<>(propertiesMap);
+    public MessageProducer(Map<String, Object> producerProperties){
+        kafkaProducer = new KafkaProducer<>(producerProperties);
     }
 
     public static void main(String[] args) throws InterruptedException {
-        MessageProducer messageProducer = new MessageProducer(getMappingProperties());
+        MessageProducer messageProducer = new MessageProducer(buildProducerProperties());
         messageProducer.publishMessageSynchronously("1", "ABC");
         messageProducer.publishMessageSynchronously("1", "DEF");
 //        messageProducer.publishMessageAsynchronously(null, "DEF");
         Thread.sleep(3000);
     }
 
-    public static Map<String, Object> getMappingProperties(){
+    public static Map<String, Object> buildProducerProperties(){
         Map<String, Object> propertiesMap = new HashMap<>();
         propertiesMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
         propertiesMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
