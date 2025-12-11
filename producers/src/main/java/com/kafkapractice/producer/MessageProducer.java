@@ -39,6 +39,8 @@ public class MessageProducer {
         propertiesMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         propertiesMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         propertiesMap.put(ProducerConfig.ACKS_CONFIG, "all");
+        propertiesMap.put(ProducerConfig.RETRIES_CONFIG, 30);
+        propertiesMap.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 3000);
         return propertiesMap;
     }
 
