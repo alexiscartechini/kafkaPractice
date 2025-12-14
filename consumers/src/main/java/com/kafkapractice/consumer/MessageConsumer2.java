@@ -13,18 +13,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumer {
+public class MessageConsumer2 {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer2.class);
     private KafkaConsumer<String, String> kafkaConsumer;
     private String topicName = "test-topic";
 
     public static void main(String[] args) {
-        MessageConsumer messageConsumer = new MessageConsumer(buildConsumerProperties());
+        MessageConsumer2 messageConsumer = new MessageConsumer2(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumer(Map<String, Object> consumerProperties){
+    public MessageConsumer2(Map<String, Object> consumerProperties){
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
@@ -34,9 +34,7 @@ public class MessageConsumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-//        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-//        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, "5000");
-//        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return properties;
     }
 

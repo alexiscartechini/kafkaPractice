@@ -1,5 +1,6 @@
 package com.kafkapractice.consumer;
 
+import com.kafkapractice.listener.MessageRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -13,18 +14,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumer {
+public class MessageConsumerRebalanceListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerRebalanceListener.class);
     private KafkaConsumer<String, String> kafkaConsumer;
     private String topicName = "test-topic";
 
     public static void main(String[] args) {
-        MessageConsumer messageConsumer = new MessageConsumer(buildConsumerProperties());
+        MessageConsumerRebalanceListener messageConsumer = new MessageConsumerRebalanceListener(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumer(Map<String, Object> consumerProperties){
+    public MessageConsumerRebalanceListener(Map<String, Object> consumerProperties){
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
@@ -41,7 +42,7 @@ public class MessageConsumer {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(topicName), new MessageRebalanceListener());
 
         try {
             while (true){

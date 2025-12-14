@@ -1,8 +1,7 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,18 +12,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumer {
+public class MessageConsumerCommitSpecificOffset {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerCommitSpecificOffset.class);
     private KafkaConsumer<String, String> kafkaConsumer;
     private String topicName = "test-topic";
+    private Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
 
     public static void main(String[] args) {
-        MessageConsumer messageConsumer = new MessageConsumer(buildConsumerProperties());
+        MessageConsumerCommitSpecificOffset messageConsumer = new MessageConsumerCommitSpecificOffset(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumer(Map<String, Object> consumerProperties){
+    public MessageConsumerCommitSpecificOffset(Map<String, Object> consumerProperties){
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
@@ -34,9 +34,7 @@ public class MessageConsumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-//        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-//        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, "5000");
-//        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         return properties;
     }
 
@@ -49,9 +47,17 @@ public class MessageConsumer {
                 consumerRecords.forEach((record) -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
                             record.key(), record.value(), record.partition());
+                    offsetMap.put(new TopicPartition(record.topic(), record.partition()),
+                            new OffsetAndMetadata(record.offset()+1, null));
                 });
+                if (consumerRecords.count()>0){
+                    kafkaConsumer.commitSync(offsetMap);
+                    logger.info("COMMIT");
+                }
             }
-        } catch (Exception e){
+        } catch (CommitFailedException e) {
+            logger.error("Commit exception: ", e);
+        } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {
             kafkaConsumer.close();

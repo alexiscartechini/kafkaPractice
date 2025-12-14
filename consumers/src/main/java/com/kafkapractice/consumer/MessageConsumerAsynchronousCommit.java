@@ -1,5 +1,6 @@
 package com.kafkapractice.consumer;
 
+import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -13,18 +14,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumer {
+import static java.util.Objects.nonNull;
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
+public class MessageConsumerAsynchronousCommit {
+
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerAsynchronousCommit.class);
     private KafkaConsumer<String, String> kafkaConsumer;
     private String topicName = "test-topic";
 
     public static void main(String[] args) {
-        MessageConsumer messageConsumer = new MessageConsumer(buildConsumerProperties());
+        MessageConsumerAsynchronousCommit messageConsumer = new MessageConsumerAsynchronousCommit(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumer(Map<String, Object> consumerProperties){
+    public MessageConsumerAsynchronousCommit(Map<String, Object> consumerProperties){
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
@@ -34,9 +37,7 @@ public class MessageConsumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-//        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-//        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, "5000");
-//        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         return properties;
     }
 
@@ -50,8 +51,17 @@ public class MessageConsumer {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
                             record.key(), record.value(), record.partition());
                 });
+                if (consumerRecords.count()>0){
+                    kafkaConsumer.commitAsync((offsets, exception) -> {
+                        if (nonNull(exception)){
+                            logger.error(exception.getMessage());
+                        } else {
+                            logger.info("COMMITED SUCCESSFULLY");
+                        }
+                    });
+                }
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {
             kafkaConsumer.close();
