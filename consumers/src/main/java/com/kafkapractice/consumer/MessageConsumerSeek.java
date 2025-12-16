@@ -1,31 +1,36 @@
 package com.kafkapractice.consumer;
 
 import com.kafkapractice.listener.MessageRebalanceListener;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumerRebalanceListener {
+import static com.kafkapractice.listener.MessageRebalanceListener.serialiaziedFilePath;
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerRebalanceListener.class);
+public class MessageConsumerSeek {
+
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerSeek.class);
     private KafkaConsumer<String, String> kafkaConsumer;
     private String topicName = "test-topic";
+    private Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
 
     public static void main(String[] args) {
-        MessageConsumerRebalanceListener messageConsumer = new MessageConsumerRebalanceListener(buildConsumerProperties());
+        MessageConsumerSeek messageConsumer = new MessageConsumerSeek(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumerRebalanceListener(Map<String, Object> consumerProperties){
+    public MessageConsumerSeek(Map<String, Object> consumerProperties){
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
@@ -48,13 +53,40 @@ public class MessageConsumerRebalanceListener {
                 consumerRecords.forEach((record) -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
                             record.key(), record.value(), record.partition());
+                    offsetMap.put(new TopicPartition(record.topic(), record.partition()),
+                            new OffsetAndMetadata(record.offset()+1, null));
                 });
-                kafkaConsumer.commitSync();
+                if (consumerRecords.count()>0){
+                    writeOffsetsMapToPath(offsetMap);
+//                    kafkaConsumer.commitSync(offsetMap);
+                    logger.info("COMMIT");
+                }
             }
-        } catch (Exception e){
+        } catch (CommitFailedException e) {
+            logger.error("Commit exception: ", e);
+        } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {
             kafkaConsumer.close();
+        }
+    }
+
+    private void writeOffsetsMapToPath(Map<TopicPartition, OffsetAndMetadata> offsetsMap) throws IOException {
+
+        FileOutputStream fout = null;
+        ObjectOutputStream oos = null;
+        try {
+            fout = new FileOutputStream(serialiaziedFilePath);
+            oos = new ObjectOutputStream(fout);
+            oos.writeObject(offsetsMap);
+            logger.info("Offsets Written Successfully!");
+        } catch (Exception ex) {
+            logger.error("Exception Occurred while writing the file : " + ex);
+        } finally {
+            if(fout!=null)
+                fout.close();
+            if(oos!=null)
+                oos.close();
         }
     }
 }
