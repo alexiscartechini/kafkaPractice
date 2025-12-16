@@ -1,12 +1,27 @@
 package com.kafkapractice.deserializer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafkapractice.domain.Item;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class ItemDeserializer implements Deserializer<Item> {
 
+    private static final Logger logger = LoggerFactory.getLogger(ItemDeserializer.class);
+
     @Override
-    public Item deserialize(String s, byte[] bytes) {
-        return null;
+    public Item deserialize(String topic, byte[] data) {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            logger.info("Deserialization...");
+            return objectMapper.readValue(data, Item.class);
+        } catch (IOException e) {
+            logger.error("Deserialization failed: {}", e.getMessage());
+            return null;
+        }
     }
 }
