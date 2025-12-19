@@ -15,9 +15,10 @@ import java.util.Map;
 public class MessageConsumerCommitSpecificOffset {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumerCommitSpecificOffset.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    private String topicName = "test-topic";
-    private Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaConsumer<String, String> kafkaConsumer;
+    private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
+    private volatile boolean running = true;
 
     public static void main(String[] args) {
         MessageConsumerCommitSpecificOffset messageConsumer = new MessageConsumerCommitSpecificOffset(buildConsumerProperties());
@@ -39,10 +40,10 @@ public class MessageConsumerCommitSpecificOffset {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
-            while (true){
+            while (running){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",

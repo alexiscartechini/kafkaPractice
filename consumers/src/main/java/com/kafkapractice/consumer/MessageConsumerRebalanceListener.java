@@ -17,8 +17,9 @@ import java.util.Map;
 public class MessageConsumerRebalanceListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumerRebalanceListener.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    private String topicName = "test-topic";
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaConsumer<String, String> kafkaConsumer;
+    private volatile boolean running = true;
 
     public static void main(String[] args) {
         MessageConsumerRebalanceListener messageConsumer = new MessageConsumerRebalanceListener(buildConsumerProperties());
@@ -40,10 +41,10 @@ public class MessageConsumerRebalanceListener {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName), new MessageRebalanceListener(kafkaConsumer));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC), new MessageRebalanceListener(kafkaConsumer));
 
         try {
-            while (true){
+            while (running){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",

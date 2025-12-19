@@ -18,7 +18,8 @@ public class MessageConsumer2 {
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumer2.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
-    
+    private volatile boolean running = true;
+
     public static void main(String[] args) {
         MessageConsumer2 messageConsumer = new MessageConsumer2(buildConsumerProperties());
         messageConsumer.pollKafka();
@@ -42,7 +43,7 @@ public class MessageConsumer2 {
         kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
-            while (true){
+            while (running){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",

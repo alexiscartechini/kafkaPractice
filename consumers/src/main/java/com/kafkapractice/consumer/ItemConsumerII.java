@@ -20,9 +20,11 @@ import java.util.Map;
 public class ItemConsumerII {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemConsumerII.class);
-    private KafkaConsumer<Integer, String> kafkaConsumer;
-    private String topicName = "test-topic";
-    private ObjectMapper objectMaper = new ObjectMapper();
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaConsumer<Integer, String> kafkaConsumer;
+    private final ObjectMapper objectMaper = new ObjectMapper();
+
+    private volatile boolean running = true;
 
     public static void main(String[] args) {
         ItemConsumerII messageConsumer = new ItemConsumerII(buildConsumerProperties());
@@ -44,10 +46,10 @@ public class ItemConsumerII {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
-            while (true){
+            while (running){
                 ConsumerRecords<Integer, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
