@@ -1,8 +1,7 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,21 +12,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Objects.nonNull;
+public class PartitionOffsetCommitConsumer {
 
-public class MessageConsumerAsynchronousCommit {
-
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerAsynchronousCommit.class);
+    private static final Logger logger = LoggerFactory.getLogger(PartitionOffsetCommitConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
+    private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
     private volatile boolean running = true;
 
-    public MessageConsumerAsynchronousCommit(Map<String, Object> consumerProperties) {
+    public PartitionOffsetCommitConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumerAsynchronousCommit messageConsumer = new MessageConsumerAsynchronousCommit(buildConsumerProperties());
+        PartitionOffsetCommitConsumer messageConsumer = new PartitionOffsetCommitConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
@@ -47,20 +45,19 @@ public class MessageConsumerAsynchronousCommit {
         try {
             while (running) {
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach(consumerRecord ->
-                        logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                                consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
-                );
+                consumerRecords.forEach(consumerRecord -> {
+                    logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    offsetMap.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
+                            new OffsetAndMetadata(consumerRecord.offset() + 1, null));
+                });
                 if (consumerRecords.count() > 0) {
-                    kafkaConsumer.commitAsync((offsets, exception) -> {
-                        if (nonNull(exception)) {
-                            logger.error(exception.getMessage());
-                        } else {
-                            logger.info("COMMITED SUCCESSFULLY");
-                        }
-                    });
+                    kafkaConsumer.commitSync(offsetMap);
+                    logger.info("COMMIT");
                 }
             }
+        } catch (CommitFailedException e) {
+            logger.error("Commit exception: ", e);
         } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {

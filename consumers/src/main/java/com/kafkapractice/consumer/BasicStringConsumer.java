@@ -1,11 +1,9 @@
 package com.kafkapractice.consumer;
 
-import com.kafkapractice.deserializer.ItemDeserializer;
-import com.kafkapractice.domain.Item;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,29 +13,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemConsumerWithSpecificDeserializer {
+public class BasicStringConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemConsumerWithSpecificDeserializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicStringConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaConsumer<Integer, Item> kafkaConsumer;
+    private final KafkaConsumer<String, String> kafkaConsumer;
 
     private volatile boolean running = true;
 
-    public ItemConsumerWithSpecificDeserializer(Map<String, Object> consumerProperties) {
+    public BasicStringConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        ItemConsumerWithSpecificDeserializer messageConsumer = new ItemConsumerWithSpecificDeserializer(buildConsumerProperties());
-        messageConsumer.pollKafka();
+        BasicStringConsumer basicStringConsumer = new BasicStringConsumer(buildConsumerProperties());
+        basicStringConsumer.pollKafka();
     }
 
     public static Map<String, Object> buildConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ItemDeserializer.class.getName());
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return properties;
     }
 
@@ -46,9 +45,11 @@ public class ItemConsumerWithSpecificDeserializer {
 
         try {
             while (running) {
-                ConsumerRecords<Integer, Item> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach(consumerRecord -> logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                        consumerRecord.key(), consumerRecord.value(), consumerRecord.partition()));
+                ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
+                consumerRecords.forEach(consumerRecord ->
+                        logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
+                                consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
             }
         } catch (Exception e) {
             logger.error("Exception in poll(): ", e);

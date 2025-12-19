@@ -17,21 +17,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemConsumerWithoutSpecificDeserializer {
+public class JsonStringItemConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemConsumerWithoutSpecificDeserializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonStringItemConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<Integer, String> kafkaConsumer;
     private final ObjectMapper objectMaper = new ObjectMapper();
 
     private volatile boolean running = true;
 
-    public ItemConsumerWithoutSpecificDeserializer(Map<String, Object> consumerProperties) {
+    public JsonStringItemConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        ItemConsumerWithoutSpecificDeserializer messageConsumer = new ItemConsumerWithoutSpecificDeserializer(buildConsumerProperties());
+        JsonStringItemConsumer messageConsumer = new JsonStringItemConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 

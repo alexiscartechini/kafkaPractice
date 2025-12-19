@@ -1,6 +1,5 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -14,19 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumerSynchronousCommit {
+import static java.util.Objects.nonNull;
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerSynchronousCommit.class);
+public class AsynchronousCommitConsumer {
+
+    private static final Logger logger = LoggerFactory.getLogger(AsynchronousCommitConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
     private volatile boolean running = true;
 
-    public MessageConsumerSynchronousCommit(Map<String, Object> consumerProperties) {
+    public AsynchronousCommitConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumerSynchronousCommit messageConsumer = new MessageConsumerSynchronousCommit(buildConsumerProperties());
+        AsynchronousCommitConsumer messageConsumer = new AsynchronousCommitConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
@@ -51,12 +52,15 @@ public class MessageConsumerSynchronousCommit {
                                 consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
                 );
                 if (consumerRecords.count() > 0) {
-                    kafkaConsumer.commitSync();
-                    logger.info("COMMIT");
+                    kafkaConsumer.commitAsync((offsets, exception) -> {
+                        if (nonNull(exception)) {
+                            logger.error(exception.getMessage());
+                        } else {
+                            logger.info("COMMITED SUCCESSFULLY");
+                        }
+                    });
                 }
             }
-        } catch (CommitFailedException e) {
-            logger.error("Commit exception: ", e);
         } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {

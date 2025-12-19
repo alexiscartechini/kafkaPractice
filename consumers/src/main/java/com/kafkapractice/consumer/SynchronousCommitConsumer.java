@@ -1,7 +1,9 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.clients.consumer.CommitFailedException;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,20 +14,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumerCommitSpecificOffset {
+public class SynchronousCommitConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerCommitSpecificOffset.class);
+    private static final Logger logger = LoggerFactory.getLogger(SynchronousCommitConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
-    private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
     private volatile boolean running = true;
 
-    public MessageConsumerCommitSpecificOffset(Map<String, Object> consumerProperties) {
+    public SynchronousCommitConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumerCommitSpecificOffset messageConsumer = new MessageConsumerCommitSpecificOffset(buildConsumerProperties());
+        SynchronousCommitConsumer messageConsumer = new SynchronousCommitConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
@@ -45,14 +46,12 @@ public class MessageConsumerCommitSpecificOffset {
         try {
             while (running) {
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach(consumerRecord -> {
-                    logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
-                    offsetMap.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
-                            new OffsetAndMetadata(consumerRecord.offset() + 1, null));
-                });
+                consumerRecords.forEach(consumerRecord ->
+                        logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
+                                consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
                 if (consumerRecords.count() > 0) {
-                    kafkaConsumer.commitSync(offsetMap);
+                    kafkaConsumer.commitSync();
                     logger.info("COMMIT");
                 }
             }
