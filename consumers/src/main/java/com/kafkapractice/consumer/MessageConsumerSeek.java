@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.kafkapractice.listener.MessageRebalanceListener.serialiaziedFilePath;
+import static com.kafkapractice.listener.MessageRebalanceListener.FILE_PATH;
 
 public class MessageConsumerSeek {
 
@@ -50,15 +50,14 @@ public class MessageConsumerSeek {
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                    offsetMap.put(new TopicPartition(record.topic(), record.partition()),
-                            new OffsetAndMetadata(record.offset()+1, null));
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    offsetMap.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
+                            new OffsetAndMetadata(consumerRecord.offset()+1, null));
                 });
                 if (consumerRecords.count()>0){
                     writeOffsetsMapToPath(offsetMap);
-//                    kafkaConsumer.commitSync(offsetMap);
                     logger.info("COMMIT");
                 }
             }
@@ -76,12 +75,12 @@ public class MessageConsumerSeek {
         FileOutputStream fout = null;
         ObjectOutputStream oos = null;
         try {
-            fout = new FileOutputStream(serialiaziedFilePath);
+            fout = new FileOutputStream(FILE_PATH);
             oos = new ObjectOutputStream(fout);
             oos.writeObject(offsetsMap);
             logger.info("Offsets Written Successfully!");
         } catch (Exception ex) {
-            logger.error("Exception Occurred while writing the file : " + ex);
+            logger.error("Exception Occurred while writing the file {}", ex.getMessage());
         } finally {
             if(fout!=null)
                 fout.close();

@@ -29,7 +29,6 @@ public class MessageProducer {
         MessageProducer messageProducer = new MessageProducer(buildProducerProperties());
         messageProducer.publishMessageSynchronously("1", "ABC");
         messageProducer.publishMessageSynchronously("1", "DEF");
-//        messageProducer.publishMessageAsynchronously(null, "DEF");
         Thread.sleep(3000);
     }
 

@@ -45,10 +45,10 @@ public class MessageConsumerRebalanceListener {
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                });
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
                 kafkaConsumer.commitSync();
             }
         } catch (Exception e){

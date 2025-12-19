@@ -44,11 +44,11 @@ public class MessageConsumerCommitSpecificOffset {
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                    offsetMap.put(new TopicPartition(record.topic(), record.partition()),
-                            new OffsetAndMetadata(record.offset()+1, null));
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
+                    offsetMap.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
+                            new OffsetAndMetadata(consumerRecord.offset()+1, null));
                 });
                 if (consumerRecords.count()>0){
                     kafkaConsumer.commitSync(offsetMap);

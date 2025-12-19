@@ -17,8 +17,8 @@ import java.util.Map;
 public class MessageConsumerSynchronousCommit {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumerSynchronousCommit.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    private String topicName = "test-topic";
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaConsumer<String, String> kafkaConsumer;
 
     public static void main(String[] args) {
         MessageConsumerSynchronousCommit messageConsumer = new MessageConsumerSynchronousCommit(buildConsumerProperties());
@@ -40,15 +40,15 @@ public class MessageConsumerSynchronousCommit {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                });
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
                 if (consumerRecords.count()>0){
                     kafkaConsumer.commitSync();
                     logger.info("COMMIT");

@@ -17,8 +17,8 @@ import java.util.Map;
 public class MessageRebalanceListener implements ConsumerRebalanceListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageRebalanceListener.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    public static final String serialiaziedFilePath = "consumers/src/main/resources/offset.ser";
+    public static final String FILE_PATH = "consumers/src/main/resources/offset.ser";
+    private final KafkaConsumer<String, String> kafkaConsumer;
 
     public MessageRebalanceListener(KafkaConsumer<String, String> kafkaConsumer) {
         this.kafkaConsumer = kafkaConsumer;
@@ -36,14 +36,12 @@ public class MessageRebalanceListener implements ConsumerRebalanceListener {
     public void onPartitionsAssigned(Collection<TopicPartition> collection) {
         logger.info("onPartitionsAssigned: {}", collection);
         Map<TopicPartition, OffsetAndMetadata> offsetMap = readOffsetSerializationFile();
-        logger.info("OffsetMap: ", offsetMap);
+        logger.info("OffsetMap: {}", offsetMap);
         if(offsetMap.size()>0){
-            collection.forEach(partition -> {
-                kafkaConsumer.seek(partition, offsetMap.get(partition));
-            });
+            collection.forEach(partition ->
+                kafkaConsumer.seek(partition, offsetMap.get(partition))
+            );
         }
-//        kafkaConsumer.seekToBeginning(collection);
-//        kafkaConsumer.seekToEnd(collection);
     }
 
     private static Map<TopicPartition, OffsetAndMetadata> readOffsetSerializationFile()  {
@@ -52,13 +50,13 @@ public class MessageRebalanceListener implements ConsumerRebalanceListener {
         BufferedInputStream bufferedInputStream = null;
         ObjectInputStream objectInputStream = null;
         try {
-            fileInputStream = new FileInputStream(serialiaziedFilePath);
+            fileInputStream = new FileInputStream(FILE_PATH);
             bufferedInputStream = new BufferedInputStream(fileInputStream);
             objectInputStream = new ObjectInputStream(bufferedInputStream);
             offsetsMapFromPath = (Map<TopicPartition, OffsetAndMetadata>) objectInputStream.readObject();
             logger.info("Offset Map read from the path is : {} ", offsetsMapFromPath);
         } catch (Exception e) {
-            logger.error("Exception Occurred while reading the file : " + e);
+            logger.error("Exception Occurred while reading the file {}", e.getMessage());
         } finally {
             try{
                 if (objectInputStream != null)
@@ -68,7 +66,7 @@ public class MessageRebalanceListener implements ConsumerRebalanceListener {
                 if (bufferedInputStream != null)
                     bufferedInputStream.close();
             }catch (Exception e){
-                logger.error("Exception Occurred in closing the exception : " + e);
+                logger.error("Exception Occurred in closing the exception {}", e.getMessage());
             }
 
         }

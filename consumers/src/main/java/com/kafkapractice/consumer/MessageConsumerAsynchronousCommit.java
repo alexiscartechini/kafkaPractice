@@ -18,7 +18,7 @@ import static java.util.Objects.nonNull;
 public class MessageConsumerAsynchronousCommit {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumerAsynchronousCommit.class);
-    private static final String topicName = "test-topic";
+    private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
 
     public static void main(String[] args) {
@@ -41,7 +41,7 @@ public class MessageConsumerAsynchronousCommit {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
             while (true){
