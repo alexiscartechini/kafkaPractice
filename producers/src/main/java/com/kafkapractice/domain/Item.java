@@ -11,7 +11,8 @@ public class Item {
     private String itemName;
     private Double price;
 
-    public Item(){}
+    public Item() {
+    }
 
     public Item(Integer id, String itemName, Double price) {
         this.id = id;

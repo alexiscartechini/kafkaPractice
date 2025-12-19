@@ -21,18 +21,18 @@ public class MessageConsumerSynchronousCommit {
     private final KafkaConsumer<String, String> kafkaConsumer;
     private volatile boolean running = true;
 
+    public MessageConsumerSynchronousCommit(Map<String, Object> consumerProperties) {
+        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+    }
+
     public static void main(String[] args) {
         MessageConsumerSynchronousCommit messageConsumer = new MessageConsumerSynchronousCommit(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumerSynchronousCommit(Map<String, Object> consumerProperties){
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
-    }
-
-    public static  Map<String, Object> buildConsumerProperties(){
+    public static Map<String, Object> buildConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:29092,localhost:29093,localhost:29094");
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
@@ -40,17 +40,17 @@ public class MessageConsumerSynchronousCommit {
         return properties;
     }
 
-    public void pollKafka(){
+    public void pollKafka() {
         kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
-            while (running){
+            while (running) {
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord ->
-                    logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                        logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
+                                consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
                 );
-                if (consumerRecords.count()>0){
+                if (consumerRecords.count() > 0) {
                     kafkaConsumer.commitSync();
                     logger.info("COMMIT");
                 }

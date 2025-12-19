@@ -1,6 +1,5 @@
 package com.kafkapractice.producer;
 
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.Objects.nonNull;
-
 public class MessageProducer {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageProducer.class);
@@ -21,7 +18,7 @@ public class MessageProducer {
     String topicName = "test-topic";
     KafkaProducer<String, String> kafkaProducer;
 
-    public MessageProducer(Map<String, Object> producerProperties){
+    public MessageProducer(Map<String, Object> producerProperties) {
         kafkaProducer = new KafkaProducer<>(producerProperties);
     }
 
@@ -32,7 +29,7 @@ public class MessageProducer {
         Thread.sleep(3000);
     }
 
-    public static Map<String, Object> buildProducerProperties(){
+    public static Map<String, Object> buildProducerProperties() {
         Map<String, Object> propertiesMap = new HashMap<>();
         propertiesMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
         propertiesMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
@@ -43,7 +40,7 @@ public class MessageProducer {
         return propertiesMap;
     }
 
-    public void publishMessageSynchronously(String key, String value){
+    public void publishMessageSynchronously(String key, String value) {
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topicName, key, value);
         try {
             kafkaProducer.send(producerRecord).get();
@@ -56,29 +53,7 @@ public class MessageProducer {
         }
     }
 
-    public void publishMessageAsynchronously(String key, String value){
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topicName, key, value);
-        try {
-            kafkaProducer.send(producerRecord, callback).get();
-            logger.info("Message {} sent successfully for the key {}", value, key);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Thread interrupted while sending message", e);
-        } catch (ExecutionException e) {
-            logger.error("Error sending message to Kafka", e);
-        }
-    }
-
-    Callback callback = (metadata, exception) -> {
-        if(nonNull(exception)){
-            logger.error("Exception in callback {}", exception.getMessage());
-        } else {
-            logger.info("Published message offset in callback is {} and the partition is {}",
-                    metadata.offset(), metadata.partition());
-        }
-    };
-
-    public void close(){
+    public void close() {
         kafkaProducer.close();
     }
 }

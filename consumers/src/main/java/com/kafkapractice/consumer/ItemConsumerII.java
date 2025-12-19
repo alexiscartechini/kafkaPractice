@@ -26,18 +26,18 @@ public class ItemConsumerII {
 
     private volatile boolean running = true;
 
+    public ItemConsumerII(Map<String, Object> consumerProperties) {
+        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+    }
+
     public static void main(String[] args) {
         ItemConsumerII messageConsumer = new ItemConsumerII(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public ItemConsumerII(Map<String, Object> consumerProperties){
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
-    }
-
-    public static  Map<String, Object> buildConsumerProperties(){
+    public static Map<String, Object> buildConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:29092,localhost:29093,localhost:29094");
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
@@ -45,11 +45,11 @@ public class ItemConsumerII {
         return properties;
     }
 
-    public void pollKafka(){
+    public void pollKafka() {
         kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
-            while (running){
+            while (running) {
                 ConsumerRecords<Integer, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
@@ -62,7 +62,7 @@ public class ItemConsumerII {
                     }
                 });
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {
             kafkaConsumer.close();

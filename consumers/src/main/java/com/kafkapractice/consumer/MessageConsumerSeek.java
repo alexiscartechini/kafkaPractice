@@ -26,18 +26,18 @@ public class MessageConsumerSeek {
     private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
     private volatile boolean running = true;
 
+    public MessageConsumerSeek(Map<String, Object> consumerProperties) {
+        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+    }
+
     public static void main(String[] args) {
         MessageConsumerSeek messageConsumer = new MessageConsumerSeek(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public MessageConsumerSeek(Map<String, Object> consumerProperties){
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
-    }
-
-    public static  Map<String, Object> buildConsumerProperties(){
+    public static Map<String, Object> buildConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:29092,localhost:29093,localhost:29094");
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
@@ -45,19 +45,19 @@ public class MessageConsumerSeek {
         return properties;
     }
 
-    public void pollKafka(){
+    public void pollKafka() {
         kafkaConsumer.subscribe(List.of(TEST_TOPIC), new MessageRebalanceListener(kafkaConsumer));
 
         try {
-            while (running){
+            while (running) {
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
                             consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
                     offsetMap.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
-                            new OffsetAndMetadata(consumerRecord.offset()+1, null));
+                            new OffsetAndMetadata(consumerRecord.offset() + 1, null));
                 });
-                if (consumerRecords.count()>0){
+                if (consumerRecords.count() > 0) {
                     writeOffsetsMapToPath(offsetMap);
                     logger.info("COMMIT");
                 }
@@ -71,9 +71,9 @@ public class MessageConsumerSeek {
         }
     }
 
-    private void writeOffsetsMapToPath(Map<TopicPartition, OffsetAndMetadata> offsetsMap) throws IOException {
+    private void writeOffsetsMapToPath(Map<TopicPartition, OffsetAndMetadata> offsetsMap){
         try (FileOutputStream fout = new FileOutputStream(FILE_PATH);
-            ObjectOutputStream oos = new ObjectOutputStream(fout)) {
+             ObjectOutputStream oos = new ObjectOutputStream(fout)) {
             oos.writeObject(offsetsMap);
             logger.info("Offsets Written Successfully!");
         } catch (IOException ex) {

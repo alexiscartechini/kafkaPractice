@@ -3,7 +3,6 @@ package com.kafkapractice.producer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafkapractice.domain.Item;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -16,8 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.Objects.nonNull;
-
 public class ItemProducerII {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemProducerII.class);
@@ -26,7 +23,7 @@ public class ItemProducerII {
     private final KafkaProducer<Integer, String> kafkaProducer;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ItemProducerII(Map<String, Object> producerProperties){
+    public ItemProducerII(Map<String, Object> producerProperties) {
         kafkaProducer = new KafkaProducer<>(producerProperties);
     }
 
@@ -46,7 +43,7 @@ public class ItemProducerII {
         Thread.sleep(3000);
     }
 
-    public static Map<String, Object> buildProducerProperties(){
+    public static Map<String, Object> buildProducerProperties() {
         Map<String, Object> propertiesMap = new HashMap<>();
         propertiesMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
         propertiesMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
@@ -70,18 +67,5 @@ public class ItemProducerII {
         } catch (ExecutionException e) {
             logger.error("Error sending message to Kafka", e);
         }
-    }
-
-    Callback callback = (metadata, exception) -> {
-        if(nonNull(exception)){
-            logger.error("Exception in callback {}", exception.getMessage());
-        } else {
-            logger.info("Published message offset in callback is {} and the partition is {}",
-                    metadata.offset(), metadata.partition());
-        }
-    };
-
-    public void close(){
-        kafkaProducer.close();
     }
 }
