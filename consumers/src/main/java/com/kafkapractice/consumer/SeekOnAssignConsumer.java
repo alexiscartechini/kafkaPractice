@@ -1,6 +1,6 @@
 package com.kafkapractice.consumer;
 
-import com.kafkapractice.listener.MessageRebalanceListener;
+import com.kafkapractice.listener.OffsetRebalanceListener;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -16,23 +16,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.kafkapractice.listener.MessageRebalanceListener.FILE_PATH;
+import static com.kafkapractice.listener.OffsetRebalanceListener.FILE_PATH;
 
-public class MessageConsumerSeekByOffset {
+public class SeekOnAssignConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerSeekByOffset.class);
+    private static final Logger logger = LoggerFactory.getLogger(SeekOnAssignConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
     private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
 
     private volatile boolean running = true;
 
-    public MessageConsumerSeekByOffset(Map<String, Object> consumerProperties) {
+    public SeekOnAssignConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumerSeekByOffset messageConsumer = new MessageConsumerSeekByOffset(buildConsumerProperties());
+        SeekOnAssignConsumer messageConsumer = new SeekOnAssignConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
@@ -47,7 +47,7 @@ public class MessageConsumerSeekByOffset {
     }
 
     public void pollKafka() {
-        kafkaConsumer.subscribe(List.of(TEST_TOPIC), new MessageRebalanceListener(kafkaConsumer));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC), new OffsetRebalanceListener(kafkaConsumer));
 
         try {
             while (running) {

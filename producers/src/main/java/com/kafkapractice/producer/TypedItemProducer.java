@@ -1,13 +1,11 @@
 package com.kafkapractice.producer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafkapractice.domain.Item;
+import com.kafkapractice.serializer.ItemSerializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.IntegerSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,30 +13,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class ItemProducerWithoutSpecificSerializer {
+public class TypedItemProducer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemProducerWithoutSpecificSerializer.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(TypedItemProducer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaProducer<Integer, String> kafkaProducer;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final KafkaProducer<Integer, Item> kafkaProducer;
 
-    public ItemProducerWithoutSpecificSerializer(Map<String, Object> producerProperties) {
+    public TypedItemProducer(Map<String, Object> producerProperties) {
         kafkaProducer = new KafkaProducer<>(producerProperties);
     }
 
     public static void main(String[] args) throws InterruptedException {
-        ItemProducerWithoutSpecificSerializer messageProducer = new ItemProducerWithoutSpecificSerializer(buildProducerProperties());
-
+        TypedItemProducer messageProducer = new TypedItemProducer(buildProducerProperties());
         Item item = new Item(1, "Chimuelo teddy bear", 52.30);
         Item item1 = new Item(2, "Pikachu teddy bear", 44.71);
 
-        try {
-            messageProducer.publishMessageSynchronously(item);
-            messageProducer.publishMessageSynchronously(item1);
-        } catch (JsonProcessingException e) {
-            logger.error("Error publishing messages: {}", e.getMessage());
-        }
+        messageProducer.publishMessageSynchronously(item);
+        messageProducer.publishMessageSynchronously(item1);
 
         Thread.sleep(3000);
     }
@@ -47,17 +38,15 @@ public class ItemProducerWithoutSpecificSerializer {
         Map<String, Object> propertiesMap = new HashMap<>();
         propertiesMap.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092");
         propertiesMap.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
-        propertiesMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        propertiesMap.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ItemSerializer.class.getName());
         propertiesMap.put(ProducerConfig.ACKS_CONFIG, "all");
         propertiesMap.put(ProducerConfig.RETRIES_CONFIG, 30);
         propertiesMap.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 3000);
         return propertiesMap;
     }
 
-    public void publishMessageSynchronously(Item item) throws JsonProcessingException {
-        String itemToString = objectMapper.writeValueAsString(item);
-
-        ProducerRecord<Integer, String> producerRecord = new ProducerRecord<>(TEST_TOPIC, item.getId(), itemToString);
+    public void publishMessageSynchronously(Item item) {
+        ProducerRecord<Integer, Item> producerRecord = new ProducerRecord<>(TEST_TOPIC, item.getId(), item);
         try {
             kafkaProducer.send(producerRecord).get();
             logger.info("Message {} sent successfully for the key {}", item, item.getId());

@@ -1,7 +1,12 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.TopicPartition;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kafkapractice.domain.Item;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,30 +17,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PartitionOffsetCommitConsumer {
+public class JsonItemConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(PartitionOffsetCommitConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonItemConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaConsumer<String, String> kafkaConsumer;
-    private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
+    private final KafkaConsumer<Integer, String> kafkaConsumer;
+    private final ObjectMapper objectMaper = new ObjectMapper();
+
     private volatile boolean running = true;
 
-    public PartitionOffsetCommitConsumer(Map<String, Object> consumerProperties) {
+    public JsonItemConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        PartitionOffsetCommitConsumer messageConsumer = new PartitionOffsetCommitConsumer(buildConsumerProperties());
+        JsonItemConsumer messageConsumer = new JsonItemConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
     public static Map<String, Object> buildConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return properties;
     }
 
@@ -44,20 +50,18 @@ public class PartitionOffsetCommitConsumer {
 
         try {
             while (running) {
-                ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
+                ConsumerRecords<Integer, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
                 consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
                             consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
-                    offsetMap.put(new TopicPartition(consumerRecord.topic(), consumerRecord.partition()),
-                            new OffsetAndMetadata(consumerRecord.offset() + 1, null));
+                    try {
+                        Item item = objectMaper.readValue(consumerRecord.value(), Item.class);
+                        logger.info("Item: {}", item);
+                    } catch (JsonProcessingException e) {
+                        logger.error("Error deserializing: {}", e.getMessage());
+                    }
                 });
-                if (consumerRecords.count() > 0) {
-                    kafkaConsumer.commitSync(offsetMap);
-                    logger.info("COMMIT");
-                }
             }
-        } catch (CommitFailedException e) {
-            logger.error("Commit exception: ", e);
         } catch (Exception e) {
             logger.error("Exception in poll(): ", e);
         } finally {

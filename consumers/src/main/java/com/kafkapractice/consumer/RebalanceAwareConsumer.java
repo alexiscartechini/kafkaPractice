@@ -1,6 +1,6 @@
 package com.kafkapractice.consumer;
 
-import com.kafkapractice.listener.MessageRebalanceListener;
+import com.kafkapractice.listener.OffsetRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -14,19 +14,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumerRebalanceListener {
+public class RebalanceAwareConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerRebalanceListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(RebalanceAwareConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
     private volatile boolean running = true;
 
-    public MessageConsumerRebalanceListener(Map<String, Object> consumerProperties) {
+    public RebalanceAwareConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumerRebalanceListener messageConsumer = new MessageConsumerRebalanceListener(buildConsumerProperties());
+        RebalanceAwareConsumer messageConsumer = new RebalanceAwareConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
@@ -41,7 +41,7 @@ public class MessageConsumerRebalanceListener {
     }
 
     public void pollKafka() {
-        kafkaConsumer.subscribe(List.of(TEST_TOPIC), new MessageRebalanceListener(kafkaConsumer));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC), new OffsetRebalanceListener(kafkaConsumer));
 
         try {
             while (running) {

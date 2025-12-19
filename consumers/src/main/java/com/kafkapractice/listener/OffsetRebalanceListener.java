@@ -15,13 +15,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MessageRebalanceListener implements ConsumerRebalanceListener {
+public class OffsetRebalanceListener implements ConsumerRebalanceListener {
 
     public static final String FILE_PATH = "consumers/src/main/resources/offset.ser";
-    private static final Logger logger = LoggerFactory.getLogger(MessageRebalanceListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(OffsetRebalanceListener.class);
     private final KafkaConsumer<String, String> kafkaConsumer;
 
-    public MessageRebalanceListener(KafkaConsumer<String, String> kafkaConsumer) {
+    public OffsetRebalanceListener(KafkaConsumer<String, String> kafkaConsumer) {
         this.kafkaConsumer = kafkaConsumer;
     }
 
