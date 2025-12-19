@@ -15,20 +15,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class ItemProducerII {
+public class ItemProducerWithoutSpecificSerializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemProducerII.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemProducerWithoutSpecificSerializer.class);
 
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaProducer<Integer, String> kafkaProducer;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ItemProducerII(Map<String, Object> producerProperties) {
+    public ItemProducerWithoutSpecificSerializer(Map<String, Object> producerProperties) {
         kafkaProducer = new KafkaProducer<>(producerProperties);
     }
 
     public static void main(String[] args) throws InterruptedException {
-        ItemProducerII messageProducer = new ItemProducerII(buildProducerProperties());
+        ItemProducerWithoutSpecificSerializer messageProducer = new ItemProducerWithoutSpecificSerializer(buildProducerProperties());
 
         Item item = new Item(1, "Chimuelo teddy bear", 52.30);
         Item item1 = new Item(2, "Pikachu teddy bear", 44.71);

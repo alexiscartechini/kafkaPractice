@@ -13,19 +13,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class ItemProducer {
+public class ItemProducerWithSpecificSerializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemProducerWithSpecificSerializer.class);
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaProducer<Integer, Item> kafkaProducer;
 
-    String topicName = "test-topic";
-    KafkaProducer<Integer, Item> kafkaProducer;
-
-    public ItemProducer(Map<String, Object> producerProperties) {
+    public ItemProducerWithSpecificSerializer(Map<String, Object> producerProperties) {
         kafkaProducer = new KafkaProducer<>(producerProperties);
     }
 
     public static void main(String[] args) throws InterruptedException {
-        ItemProducer messageProducer = new ItemProducer(buildProducerProperties());
+        ItemProducerWithSpecificSerializer messageProducer = new ItemProducerWithSpecificSerializer(buildProducerProperties());
         Item item = new Item(1, "Chimuelo teddy bear", 52.30);
         Item item1 = new Item(2, "Pikachu teddy bear", 44.71);
 
@@ -47,7 +46,7 @@ public class ItemProducer {
     }
 
     public void publishMessageSynchronously(Item item) {
-        ProducerRecord<Integer, Item> producerRecord = new ProducerRecord<>(topicName, item.getId(), item);
+        ProducerRecord<Integer, Item> producerRecord = new ProducerRecord<>(TEST_TOPIC, item.getId(), item);
         try {
             kafkaProducer.send(producerRecord).get();
             logger.info("Message {} sent successfully for the key {}", item, item.getId());

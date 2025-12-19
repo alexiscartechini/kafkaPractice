@@ -15,19 +15,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemConsumer {
+public class ItemConsumerWithSpecificDeserializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemConsumerWithSpecificDeserializer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<Integer, Item> kafkaConsumer;
+
     private volatile boolean running = true;
 
-    public ItemConsumer(Map<String, Object> consumerProperties) {
+    public ItemConsumerWithSpecificDeserializer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        ItemConsumer messageConsumer = new ItemConsumer(buildConsumerProperties());
+        ItemConsumerWithSpecificDeserializer messageConsumer = new ItemConsumerWithSpecificDeserializer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
