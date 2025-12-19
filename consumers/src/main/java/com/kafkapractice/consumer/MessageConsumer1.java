@@ -16,8 +16,9 @@ import java.util.Map;
 public class MessageConsumer1 {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumer1.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    private String topicName = "test-topic";
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaConsumer<String, String> kafkaConsumer;
+
 
     public static void main(String[] args) {
         MessageConsumer1 messageConsumer = new MessageConsumer1(buildConsumerProperties());
@@ -39,15 +40,15 @@ public class MessageConsumer1 {
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                });
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
             }
         } catch (Exception e){
             logger.error("Exception in poll(): ", e);

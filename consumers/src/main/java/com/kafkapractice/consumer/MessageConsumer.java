@@ -16,8 +16,8 @@ import java.util.Map;
 public class MessageConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    private String topicName = "test-topic";
+    private static final String TEST_TOPIC = "test-topic";
+    private final KafkaConsumer<String, String> kafkaConsumer;
 
     public static void main(String[] args) {
         MessageConsumer messageConsumer = new MessageConsumer(buildConsumerProperties());
@@ -34,22 +34,19 @@ public class MessageConsumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-//        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-//        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, "5000");
-//        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
         return properties;
     }
 
     public void pollKafka(){
-        kafkaConsumer.subscribe(List.of(topicName));
+        kafkaConsumer.subscribe(List.of(TEST_TOPIC));
 
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                });
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
             }
         } catch (Exception e){
             logger.error("Exception in poll(): ", e);

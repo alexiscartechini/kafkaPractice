@@ -22,7 +22,7 @@ public class ItemProducerII {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemProducerII.class);
 
-    private final static String topicName = "test-topic";
+    private static final String TEST_TOPIC = "test-topic";
     private final KafkaProducer<Integer, String> kafkaProducer;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -60,7 +60,7 @@ public class ItemProducerII {
     public void publishMessageSynchronously(Item item) throws JsonProcessingException {
         String itemToString = objectMapper.writeValueAsString(item);
 
-        ProducerRecord<Integer, String> producerRecord = new ProducerRecord<>(topicName, item.getId(), itemToString);
+        ProducerRecord<Integer, String> producerRecord = new ProducerRecord<>(TEST_TOPIC, item.getId(), itemToString);
         try {
             kafkaProducer.send(producerRecord).get();
             logger.info("Message {} sent successfully for the key {}", item, item.getId());

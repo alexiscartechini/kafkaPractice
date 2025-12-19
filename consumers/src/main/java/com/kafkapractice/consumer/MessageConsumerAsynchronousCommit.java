@@ -1,6 +1,5 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.CommitFailedException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -19,8 +18,8 @@ import static java.util.Objects.nonNull;
 public class MessageConsumerAsynchronousCommit {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumerAsynchronousCommit.class);
-    private KafkaConsumer<String, String> kafkaConsumer;
-    private String topicName = "test-topic";
+    private static final String topicName = "test-topic";
+    private final KafkaConsumer<String, String> kafkaConsumer;
 
     public static void main(String[] args) {
         MessageConsumerAsynchronousCommit messageConsumer = new MessageConsumerAsynchronousCommit(buildConsumerProperties());
@@ -47,10 +46,10 @@ public class MessageConsumerAsynchronousCommit {
         try {
             while (true){
                 ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord ->
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
-                });
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition())
+                );
                 if (consumerRecords.count()>0){
                     kafkaConsumer.commitAsync((offsets, exception) -> {
                         if (nonNull(exception)){

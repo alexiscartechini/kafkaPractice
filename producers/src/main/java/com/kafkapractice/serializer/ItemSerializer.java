@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 public class ItemSerializer implements Serializer<Item> {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemSerializer.class);
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public byte[] serialize(String s, Item item) {
@@ -19,7 +19,7 @@ public class ItemSerializer implements Serializer<Item> {
             return objectMapper.writeValueAsBytes(item);
         } catch (JsonProcessingException e) {
             logger.error("Something happened while serializing: {}, error message is: {}", item, e.getMessage());
-            return null;
+            return new byte[0];
         }
     }
 }
