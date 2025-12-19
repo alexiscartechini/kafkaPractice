@@ -13,20 +13,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MessageConsumer2 {
+public class MessageConsumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer2.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
 
     private volatile boolean running = true;
 
-    public MessageConsumer2(Map<String, Object> consumerProperties) {
+    public MessageConsumer(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumer2 messageConsumer = new MessageConsumer2(buildConsumerProperties());
+        MessageConsumer messageConsumer = new MessageConsumer(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 

@@ -27,7 +27,6 @@ public class CommandLineLauncher {
                     break;
                 default:
                     break;
-
             }
         }
     }
@@ -49,7 +48,7 @@ public class CommandLineLauncher {
 
     public static void publishMessage(MessageProducer messageProducer, String input) {
         StringTokenizer stringTokenizer = new StringTokenizer(input, "-");
-        Integer noOfTokens = stringTokenizer.countTokens();
+        int noOfTokens = stringTokenizer.countTokens();
         switch (noOfTokens) {
             case 1:
                 messageProducer.publishMessageSynchronously(null, stringTokenizer.nextToken());

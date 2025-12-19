@@ -18,20 +18,21 @@ import java.util.Map;
 
 import static com.kafkapractice.listener.MessageRebalanceListener.FILE_PATH;
 
-public class MessageConsumerSeek {
+public class MessageConsumerSeekByOffset {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerSeek.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageConsumerSeekByOffset.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
     private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
+
     private volatile boolean running = true;
 
-    public MessageConsumerSeek(Map<String, Object> consumerProperties) {
+    public MessageConsumerSeekByOffset(Map<String, Object> consumerProperties) {
         kafkaConsumer = new KafkaConsumer<>(consumerProperties);
     }
 
     public static void main(String[] args) {
-        MessageConsumerSeek messageConsumer = new MessageConsumerSeek(buildConsumerProperties());
+        MessageConsumerSeekByOffset messageConsumer = new MessageConsumerSeekByOffset(buildConsumerProperties());
         messageConsumer.pollKafka();
     }
 
