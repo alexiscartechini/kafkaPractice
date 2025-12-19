@@ -64,8 +64,11 @@ public class ItemProducerII {
         try {
             kafkaProducer.send(producerRecord).get();
             logger.info("Message {} sent successfully for the key {}", item, item.getId());
-        } catch (InterruptedException|ExecutionException e) {
-            logger.error("Exception in publishMessageSynchronously: {}", e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Thread interrupted while sending message", e);
+        } catch (ExecutionException e) {
+            logger.error("Error sending message to Kafka", e);
         }
     }
 

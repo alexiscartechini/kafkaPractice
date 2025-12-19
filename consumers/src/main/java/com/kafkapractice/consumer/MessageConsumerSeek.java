@@ -72,21 +72,12 @@ public class MessageConsumerSeek {
     }
 
     private void writeOffsetsMapToPath(Map<TopicPartition, OffsetAndMetadata> offsetsMap) throws IOException {
-
-        FileOutputStream fout = null;
-        ObjectOutputStream oos = null;
-        try {
-            fout = new FileOutputStream(FILE_PATH);
-            oos = new ObjectOutputStream(fout);
+        try (FileOutputStream fout = new FileOutputStream(FILE_PATH);
+            ObjectOutputStream oos = new ObjectOutputStream(fout)) {
             oos.writeObject(offsetsMap);
             logger.info("Offsets Written Successfully!");
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.error("Exception Occurred while writing the file {}", ex.getMessage());
-        } finally {
-            if(fout!=null)
-                fout.close();
-            if(oos!=null)
-                oos.close();
         }
     }
 }
