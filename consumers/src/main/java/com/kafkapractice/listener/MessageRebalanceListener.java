@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,39 +38,25 @@ public class MessageRebalanceListener implements ConsumerRebalanceListener {
         logger.info("onPartitionsAssigned: {}", collection);
         Map<TopicPartition, OffsetAndMetadata> offsetMap = readOffsetSerializationFile();
         logger.info("OffsetMap: {}", offsetMap);
-        if(offsetMap.size()>0){
+        if(!offsetMap.isEmpty()){
             collection.forEach(partition ->
                 kafkaConsumer.seek(partition, offsetMap.get(partition))
             );
         }
     }
 
-    private static Map<TopicPartition, OffsetAndMetadata> readOffsetSerializationFile()  {
-        Map<TopicPartition, OffsetAndMetadata> offsetsMapFromPath = new HashMap<>();
-        FileInputStream fileInputStream = null;
-        BufferedInputStream bufferedInputStream = null;
-        ObjectInputStream objectInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(FILE_PATH);
-            bufferedInputStream = new BufferedInputStream(fileInputStream);
-            objectInputStream = new ObjectInputStream(bufferedInputStream);
-            offsetsMapFromPath = (Map<TopicPartition, OffsetAndMetadata>) objectInputStream.readObject();
-            logger.info("Offset Map read from the path is : {} ", offsetsMapFromPath);
-        } catch (Exception e) {
-            logger.error("Exception Occurred while reading the file {}", e.getMessage());
-        } finally {
-            try{
-                if (objectInputStream != null)
-                    objectInputStream.close();
-                if (fileInputStream != null)
-                    fileInputStream.close();
-                if (bufferedInputStream != null)
-                    bufferedInputStream.close();
-            }catch (Exception e){
-                logger.error("Exception Occurred in closing the exception {}", e.getMessage());
-            }
+    private static Map<TopicPartition, OffsetAndMetadata> readOffsetSerializationFile(){
+        try (FileInputStream fileInputStream = new FileInputStream(FILE_PATH);
+             BufferedInputStream bufferedInputStream  = new BufferedInputStream(fileInputStream);
+             ObjectInputStream objectInputStream  = new ObjectInputStream(bufferedInputStream)){
 
+            Map<TopicPartition, OffsetAndMetadata> offsetsMapFromPath = (Map<TopicPartition, OffsetAndMetadata>) objectInputStream.readObject();
+            logger.info("Offset Map read from the path is : {} ", offsetsMapFromPath);
+            return offsetsMapFromPath;
+
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Exception Occurred while reading the file {}", e.getMessage());
+            return new HashMap<>();
         }
-        return offsetsMapFromPath;
     }
 }
