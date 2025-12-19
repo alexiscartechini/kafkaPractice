@@ -49,11 +49,11 @@ public class ItemConsumerII {
         try {
             while (true){
                 ConsumerRecords<Integer, String> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> {
+                consumerRecords.forEach(consumerRecord -> {
                     logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                            record.key(), record.value(), record.partition());
+                            consumerRecord.key(), consumerRecord.value(), consumerRecord.partition());
                     try {
-                        Item item = objectMaper.readValue(record.value(), Item.class);
+                        Item item = objectMaper.readValue(consumerRecord.value(), Item.class);
                         logger.info("Item: {}", item);
                     } catch (JsonProcessingException e) {
                         logger.error("Error deserializing: {}", e.getMessage());

@@ -6,7 +6,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +36,6 @@ public class ItemConsumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ItemDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-//        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-//        properties.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, "5000");
-//        properties.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
         return properties;
     }
 
@@ -49,8 +45,8 @@ public class ItemConsumer {
         try {
             while (true){
                 ConsumerRecords<Integer, Item> consumerRecords = kafkaConsumer.poll(Duration.of(100, ChronoUnit.MILLIS));
-                consumerRecords.forEach((record) -> logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
-                        record.key(), record.value(), record.partition()));
+                consumerRecords.forEach(consumerRecord -> logger.info("Consumer Record Key is {} and message is \"{}\" from partition {}",
+                        consumerRecord.key(), consumerRecord.value(), consumerRecord.partition()));
             }
         } catch (Exception e){
             logger.error("Exception in poll(): ", e);
