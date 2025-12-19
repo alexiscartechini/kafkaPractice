@@ -18,6 +18,7 @@ public class MessageConsumer2 {
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumer2.class);
     private static final String TEST_TOPIC = "test-topic";
     private final KafkaConsumer<String, String> kafkaConsumer;
+
     private volatile boolean running = true;
 
     public MessageConsumer2(Map<String, Object> consumerProperties) {
