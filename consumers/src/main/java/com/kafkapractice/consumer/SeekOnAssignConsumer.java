@@ -18,17 +18,14 @@ import java.util.Map;
 
 import static com.kafkapractice.listener.OffsetRebalanceListener.FILE_PATH;
 
-public class SeekOnAssignConsumer {
+public class SeekOnAssignConsumer extends AbstractKafkaConsumer<String, String> {
 
     private static final Logger logger = LoggerFactory.getLogger(SeekOnAssignConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaConsumer<String, String> kafkaConsumer;
     private final Map<TopicPartition, OffsetAndMetadata> offsetMap = new HashMap<>();
 
-    private volatile boolean running = true;
-
     public SeekOnAssignConsumer(Map<String, Object> consumerProperties) {
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+        super(consumerProperties);
     }
 
     public static void main(String[] args) {

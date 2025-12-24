@@ -3,7 +3,6 @@ package com.kafkapractice.consumer;
 import com.kafkapractice.listener.OffsetRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,15 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RebalanceAwareConsumer {
+public class RebalanceAwareConsumer extends AbstractKafkaConsumer<String, String>{
 
     private static final Logger logger = LoggerFactory.getLogger(RebalanceAwareConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaConsumer<String, String> kafkaConsumer;
-    private volatile boolean running = true;
 
     public RebalanceAwareConsumer(Map<String, Object> consumerProperties) {
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+        super(consumerProperties);
     }
 
     public static void main(String[] args) {

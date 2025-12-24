@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kafkapractice.domain.Item;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
@@ -17,17 +16,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JsonItemConsumer {
+public class JsonItemConsumer extends AbstractKafkaConsumer<Integer, String>{
 
     private static final Logger logger = LoggerFactory.getLogger(JsonItemConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaConsumer<Integer, String> kafkaConsumer;
     private final ObjectMapper objectMaper = new ObjectMapper();
 
-    private volatile boolean running = true;
-
     public JsonItemConsumer(Map<String, Object> consumerProperties) {
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+        super(consumerProperties);
     }
 
     public static void main(String[] args) {

@@ -4,7 +4,6 @@ import com.kafkapractice.deserializer.ItemDeserializer;
 import com.kafkapractice.domain.Item;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +14,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TypedItemConsumer {
+public class TypedItemConsumer extends AbstractKafkaConsumer<Integer, Item>{
 
     private static final Logger logger = LoggerFactory.getLogger(TypedItemConsumer.class);
     private static final String TEST_TOPIC = "test-topic";
-    private final KafkaConsumer<Integer, Item> kafkaConsumer;
-
-    private volatile boolean running = true;
 
     public TypedItemConsumer(Map<String, Object> consumerProperties) {
-        kafkaConsumer = new KafkaConsumer<>(consumerProperties);
+        super(consumerProperties);
     }
 
     public static void main(String[] args) {
