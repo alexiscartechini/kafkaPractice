@@ -1,14 +1,11 @@
 package com.kafkapractice.consumer;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,18 +19,8 @@ public class BasicStringConsumer extends AbstractKafkaConsumer<String, String> {
     }
 
     public static void main(String[] args) {
-        BasicStringConsumer basicStringConsumer = new BasicStringConsumer(buildConsumerProperties());
+        BasicStringConsumer basicStringConsumer = new BasicStringConsumer(baseConsumerProperties());
         basicStringConsumer.pollKafka();
-    }
-
-    public static Map<String, Object> buildConsumerProperties() {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        return properties;
     }
 
     public void pollKafka() {

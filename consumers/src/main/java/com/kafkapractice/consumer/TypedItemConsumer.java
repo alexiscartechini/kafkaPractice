@@ -24,16 +24,16 @@ public class TypedItemConsumer extends AbstractKafkaConsumer<Integer, Item>{
     }
 
     public static void main(String[] args) {
-        TypedItemConsumer messageConsumer = new TypedItemConsumer(buildConsumerProperties());
+        TypedItemConsumer messageConsumer = new TypedItemConsumer(baseConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public static Map<String, Object> buildConsumerProperties() {
+    public static Map<String, Object> baseConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ItemDeserializer.class.getName());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup");
         return properties;
     }
 

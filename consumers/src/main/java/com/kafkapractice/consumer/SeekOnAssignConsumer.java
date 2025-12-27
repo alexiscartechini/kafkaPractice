@@ -3,7 +3,6 @@ package com.kafkapractice.consumer;
 import com.kafkapractice.listener.OffsetRebalanceListener;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,18 +28,8 @@ public class SeekOnAssignConsumer extends AbstractKafkaConsumer<String, String> 
     }
 
     public static void main(String[] args) {
-        SeekOnAssignConsumer messageConsumer = new SeekOnAssignConsumer(buildConsumerProperties());
+        SeekOnAssignConsumer messageConsumer = new SeekOnAssignConsumer(baseConsumerProperties());
         messageConsumer.pollKafka();
-    }
-
-    public static Map<String, Object> buildConsumerProperties() {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-        return properties;
     }
 
     public void pollKafka() {

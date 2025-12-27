@@ -27,16 +27,16 @@ public class JsonItemConsumer extends AbstractKafkaConsumer<Integer, String>{
     }
 
     public static void main(String[] args) {
-        JsonItemConsumer messageConsumer = new JsonItemConsumer(buildConsumerProperties());
+        JsonItemConsumer messageConsumer = new JsonItemConsumer(baseConsumerProperties());
         messageConsumer.pollKafka();
     }
 
-    public static Map<String, Object> buildConsumerProperties() {
+    public static Map<String, Object> baseConsumerProperties() {
         Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:29092,localhost:29093,localhost:29094");
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup2");
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "firstGroup");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return properties;
     }
